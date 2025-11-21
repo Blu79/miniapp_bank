@@ -2,71 +2,751 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <title>Mini Bank App</title>
+  <title>Lộc Lá May Mắn</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
+    :root {
+      --bg-gradient: linear-gradient(145deg, #ffb347, #ffcc33);
+      --card-radius: 22px;
+      --card-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+      --primary: #ff7b39;
+      --primary-soft: #ffe1c7;
+      --accent-blue: #3b82f6;
+      --accent-green: #22c55e;
+      --text-main: #123047;
+      --text-soft: #5b728a;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
     body {
       margin: 0;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #0f172a;
-      color: #e5e7eb;
+      background: var(--bg-gradient);
+      color: var(--text-main);
     }
-    .app { padding: 16px; }
-    .card {
-      background: rgba(15,23,42,0.9);
-      border-radius: 16px;
-      padding: 16px;
+
+    .app {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 12px 12px 72px; /* chừa chỗ cho bottom nav */
+    }
+
+    .top-summary {
+      border-radius: 26px;
+      padding: 14px 16px;
+      background: linear-gradient(145deg, #34d399, #22c55e);
+      color: #f9fafb;
+      box-shadow: 0 16px 40px rgba(16, 185, 129, 0.55);
+      margin-bottom: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .top-summary::after {
+      content: "";
+      position: absolute;
+      right: -40px;
+      top: -40px;
+      width: 120px;
+      height: 120px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.28);
+      backdrop-filter: blur(6px);
+    }
+
+    .top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .app-title {
+      font-size: 18px;
+      font-weight: 700;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .app-title span.sub {
+      font-size: 12px;
+      font-weight: 500;
+      opacity: 0.9;
+    }
+
+    .balances {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .pill-balance {
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.2);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .pill-balance .icon {
+      font-size: 14px;
+    }
+
+    .pill-balance .value {
+      font-size: 13px;
+    }
+
+    .user-row {
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      opacity: 0.95;
+    }
+
+    .user-row span.name {
+      font-weight: 600;
+    }
+
+    .user-row span.id {
+      font-family: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      opacity: 0.9;
+    }
+
+    .tag-soft {
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.18);
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .page {
+      flex: 1;
+      margin-top: 4px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .section-card {
+      border-radius: var(--card-radius);
+      padding: 16px 16px 14px;
       margin-bottom: 12px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-      border: 1px solid rgba(148,163,184,0.3);
+      box-shadow: var(--card-shadow);
+      background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(252, 231, 216, 0.97));
+      border: 1px solid rgba(255,255,255,0.7);
     }
-    .title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
-    .subtitle { font-size: 14px; color: #9ca3af; margin-bottom: 12px; }
-    .balance { font-size: 26px; font-weight: 700; margin: 8px 0; color: #22c55e; }
-    .row { display: flex; gap: 10px; margin-top: 8px; }
-    .pill {
-      flex: 1; border-radius: 999px; padding: 10px 14px; font-size: 13px;
-      text-align: center; background: rgba(30,64,175,0.7);
-      border: 1px solid rgba(191,219,254,0.2); cursor: pointer;
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
     }
-    .pill.secondary {
-      background: rgba(15,23,42,0.8);
-      border-color: rgba(148,163,184,0.4);
+
+    .section-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      background: rgba(254, 240, 199, 0.9);
     }
-    .pill:active { transform: scale(0.98); opacity: 0.8; }
-    .label { font-size: 13px; color: #9ca3af; }
-    .value { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
-    .section-title { font-size: 15px; font-weight: 600; margin: 12px 0 6px; }
-    .tag {
-      display: inline-block; padding: 3px 8px; border-radius: 999px;
-      font-size: 11px; background: rgba(56,189,248,0.15);
-      border: 1px solid rgba(56,189,248,0.5); color: #7dd3fc;
-      margin-right: 4px; margin-bottom: 4px;
+
+    .section-title-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .section-sub {
+      font-size: 12px;
+      color: var(--text-soft);
+    }
+
+    .reward-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      margin: 10px 0 6px;
+      color: var(--text-soft);
+    }
+
+    .reward-row span strong {
+      color: var(--text-main);
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .btn {
+      flex: 1;
+      border: none;
+      border-radius: 999px;
+      padding: 9px 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      outline: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+      opacity: 0.9;
+    }
+
+    .btn-gold {
+      background: linear-gradient(135deg, #fbbf24, #f97316);
+      color: #1f2933;
+      box-shadow: 0 10px 20px rgba(249, 115, 22, 0.55);
+    }
+
+    .btn-blue {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: #e5f2ff;
+      box-shadow: 0 10px 20px rgba(37, 99, 235, 0.55);
+    }
+
+    .btn-outline {
+      background: rgba(255, 255, 255, 0.9);
+      color: var(--text-main);
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      box-shadow: 0 8px 18px rgba(148, 163, 184, 0.4);
+    }
+
+    .empty-text {
+      font-size: 13px;
+      color: var(--text-soft);
+      font-style: italic;
+    }
+
+    .ach-item {
+      border-radius: 16px;
+      padding: 10px 10px;
+      background: rgba(248, 250, 252, 0.9);
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      margin-top: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      font-size: 12px;
+    }
+
+    .ach-left {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .ach-title {
+      font-weight: 600;
+      color: #1f2933;
+    }
+
+    .ach-reward {
+      color: var(--text-soft);
+    }
+
+    .ach-badge {
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      min-width: 68px;
+      text-align: center;
+    }
+
+    .ach-badge.pending {
+      background: #e5e7eb;
+      color: #4b5563;
+    }
+
+    .ach-badge.done {
+      background: #22c55e;
+      color: #f9fafb;
+    }
+
+    /* bottom nav */
+    .bottom-nav {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 6px 10px 10px;
+      background: rgba(15, 23, 42, 0.96);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 -8px 30px rgba(15, 23, 42, 0.85);
+      display: flex;
+      justify-content: space-between;
+      z-index: 20;
+    }
+
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      font-size: 10px;
+      color: #9ca3af;
+      cursor: pointer;
+      padding: 4px 0;
+    }
+
+    .nav-item-icon {
+      font-size: 18px;
+    }
+
+    .nav-item.active {
+      color: #facc15;
+    }
+
+    .nav-item.active .nav-item-icon {
+      transform: translateY(-1px);
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      background: rgba(56, 189, 248, 0.18);
+      border: 1px solid rgba(56, 189, 248, 0.55);
+      color: #0ea5e9;
+      margin-top: 4px;
     }
   </style>
 </head>
 <body>
 <div class="app">
-  <div class="card">
-    <div class="title">Mini Bank App 💳</div>
-    <div class="subtitle" id="subtitle">Đang tải thông tin Telegram...</div>
-
-    <div class="label">Số dư ước tính</div>
-    <div class="balance" id="balance">0 đ</div>
-
-    <div class="row">
-      <div class="pill" id="btnOpenBot">🔁 Mở bot chat</div>
-      <div class="pill secondary" id="btnCopyRef">👥 Copy link mời</div>
+  <!-- TOP SUMMARY -->
+  <div class="top-summary">
+    <div class="top-row">
+      <div class="app-title">
+        <span>Lộc Lá May Mắn 🍀</span>
+        <span class="sub" id="subtitle">Mini app nhiệm vụ – mời bạn nhận thưởng</span>
+      </div>
+      <div class="balances">
+        <div class="pill-balance">
+          <span class="icon">💎</span>
+          <span class="value" id="diamondBalance">0</span>
+        </div>
+        <div class="pill-balance">
+          <span class="icon">🪙</span>
+          <span class="value" id="goldBalance">0</span>
+        </div>
+      </div>
+    </div>
+    <div class="user-row">
+      <div>
+        <span class="name" id="userName">Khách</span>
+        <span class="id" id="userId">ID ?</span>
+      </div>
+      <span class="tag-soft">Mở trong Telegram mini app</span>
     </div>
   </div>
 
-  <div class="card">
-    <div class="section-title">Trạng thái tài khoản</div>
-    <div class="label">User</div>
-    <div class="value" id="userInfo">Không xác định</div>
+  <!-- PAGES -->
+  <div class="page" id="page-home">
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon">⚡</div>
+        <div class="section-title-wrap">
+          <div class="section-title">Khai thác may mắn</div>
+          <div class="section-sub">Ấn nhận thưởng mỗi vài phút một lần.</div>
+        </div>
+      </div>
+      <div class="reward-row">
+        <span>Phần thưởng ngẫu nhiên: <strong>1 – 3 💎</strong></span>
+        <span>Cooldown: <strong>5 phút</strong></span>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-gold" id="btnMine">
+          ⛏ Nhận may mắn
+        </button>
+      </div>
+      <div class="chip">
+        ⏱ <span id="mineStatus">Có thể nhận ngay bây giờ</span>
+      </div>
+    </div>
 
-    <div class="label">Tips</div>
-    <div class="tag">Điểm danh mỗi ngày 🎯</div>
-    <div class="tag">Làm nhiệm vụ 🧾</div>
-    <div class="
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon">🔄</div>
+        <div class="section-title-wrap">
+          <div class="section-title">Quy đổi phần thưởng</div>
+          <div class="section-sub">Đổi kim cương sang xu vàng để rút tiền.</div>
+        </div>
+      </div>
+      <div class="reward-row">
+        <span>Tỷ lệ quy đổi: <strong>1 💎 = 1.000 🪙</strong></span>
+        <span>Rút tối thiểu: <strong>20.000 🪙</strong></span>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-blue" id="btnConvert">
+          💱 Đổi hết 💎 sang 🪙
+        </button>
+        <button class="btn btn-outline" id="btnOpenBotFromHome">
+          💬 Mở bot chat
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE MISSIONS -->
+  <div class="page hidden" id="page-missions">
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon">🎬</div>
+        <div class="section-title-wrap">
+          <div class="section-title">Xem quảng cáo</div>
+          <div class="section-sub">Cứ sau 15 phút có thể nhận vàng hoặc kim cương 1 lần.</div>
+        </div>
+      </div>
+      <div class="reward-row">
+        <span>Vàng: <strong>20.000 🪙</strong></span>
+        <span>Kim cương: <strong>50 💎</strong></span>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-gold" id="btnAdGold">Nhận Vàng</button>
+        <button class="btn btn-blue" id="btnAdDiamond">Nhận Kim Cương</button>
+      </div>
+      <div class="chip">📺 Chức năng demo – cần gắn API thật của bạn.</div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon">📣</div>
+        <div class="section-title-wrap">
+          <div class="section-title">Tham gia kênh Telegram</div>
+          <div class="section-sub">Nhận thưởng khi tham gia kênh / nhóm đối tác.</div>
+        </div>
+      </div>
+      <p class="empty-text" id="channelText">
+        Hiện chưa có kênh nào để tham gia. Hãy quay lại sau nhé!
+      </p>
+      <div class="btn-row">
+        <button class="btn btn-outline" id="btnOpenMainChannel">
+          🔗 Mở kênh chính
+        </button>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon">🏆</div>
+        <div class="section-title-wrap">
+          <div class="section-title">Thành tích</div>
+          <div class="section-sub">Hoàn thành mục tiêu để nhận thưởng thêm.</div>
+        </div>
+      </div>
+
+      <div class="ach-item">
+        <div class="ach-left">
+          <div class="ach-title">Mời 5 người nhận 10.000 💎</div>
+          <div class="ach-reward">Phần thưởng: 10.000 💎</div>
+        </div>
+        <div class="ach-badge pending" id="ach5">Chưa đạt</div>
+      </div>
+
+      <div class="ach-item">
+        <div class="ach-left">
+          <div class="ach-title">Mời 10 người nhận 20.000 💎</div>
+          <div class="ach-reward">Phần thưởng: 20.000 💎</div>
+        </div>
+        <div class="ach-badge pending" id="ach10">Chưa đạt</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE INVITE -->
+  <div class="page hidden" id="page-invite">
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon">👥</div>
+        <div class="section-title-wrap">
+          <div class="section-title">Mời bạn bè</div>
+          <div class="section-sub">Nhận thưởng khi bạn bè vào bot qua link của bạn.</div>
+        </div>
+      </div>
+      <p class="section-sub" id="inviteDesc">
+        Link mời của bạn:
+      </p>
+      <div class="section-card" style="background: rgba(255,255,255,0.9); box-shadow: none; border-radius: 16px; padding: 10px 12px; margin: 6px 0 10px;">
+        <code id="inviteLink" style="font-size: 11px; word-break: break-all;"></code>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-blue" id="btnCopyRef">📋 Copy link mời</button>
+        <button class="btn btn-outline" id="btnShareRef">📤 Gửi qua Telegram</button>
+      </div>
+      <div class="chip">
+        🎁 Mỗi người hợp lệ bạn sẽ được thưởng theo cấu hình bot.
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE WITHDRAW -->
+  <div class="page hidden" id="page-withdraw">
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon">💳</div>
+        <div class="section-title-wrap">
+          <div class="section-title">Rút tiền</div>
+          <div class="section-sub">Tạo yêu cầu rút thông qua bot để admin duyệt.</div>
+        </div>
+      </div>
+      <p class="section-sub">
+        Bạn có thể dùng lệnh <code>/rut</code> trong bot:<br />
+        <code>/rut STK NGANHANG SOTIEN</code><br />
+        Ví dụ: <code>/rut 0123456789 MBBANK 20000</code>
+      </p>
+      <div class="btn-row" style="margin-top: 10px;">
+        <button class="btn btn-gold" id="btnOpenBotWithdraw">🏦 Mở bot & rút tiền</button>
+      </div>
+      <div class="chip">
+        🔐 Toàn bộ xử lý rút tiền được thực hiện ở phía bot / server.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <div class="nav-item active" data-target="page-home">
+    <div class="nav-item-icon">🚚</div>
+    <div>Khai Thác</div>
+  </div>
+  <div class="nav-item" data-target="page-home">
+    <div class="nav-item-icon">💲</div>
+    <div>Quy Đổi</div>
+  </div>
+  <div class="nav-item" data-target="page-missions">
+    <div class="nav-item-icon">🎁</div>
+    <div>Nhiệm Vụ</div>
+  </div>
+  <div class="nav-item" data-target="page-invite">
+    <div class="nav-item-icon">🔗</div>
+    <div>Mời Bạn Bè</div>
+  </div>
+  <div class="nav-item" data-target="page-withdraw">
+    <div class="nav-item-icon">💼</div>
+    <div>Rút Tiền</div>
+  </div>
+</div>
+
+<script>
+  const tg = window.Telegram.WebApp;
+  tg.expand();
+
+  let user = tg.initDataUnsafe && tg.initDataUnsafe.user;
+
+  const subtitleEl = document.getElementById("subtitle");
+  const userNameEl = document.getElementById("userName");
+  const userIdEl = document.getElementById("userId");
+  const diamondBalanceEl = document.getElementById("diamondBalance");
+  const goldBalanceEl = document.getElementById("goldBalance");
+  const inviteLinkEl = document.getElementById("inviteLink");
+  const inviteDescEl = document.getElementById("inviteDesc");
+
+  const navItems = document.querySelectorAll(".nav-item");
+  const pages = document.querySelectorAll(".page");
+
+  // Demo state (sau này thay bằng fetch từ API bot)
+  let diamonds = 1000;
+  let gold = 3000001;
+  let lastMineTs = 0;
+  const MINE_COOLDOWN = 5 * 60 * 1000; // 5 phút
+
+  function updateBalancesUI() {
+    diamondBalanceEl.textContent = diamonds.toLocaleString("vi-VN");
+    goldBalanceEl.textContent = gold.toLocaleString("vi-VN");
+  }
+
+  function updateUserUI() {
+    if (user) {
+      const fullName = [user.first_name, user.last_name].filter(Boolean).join(" ");
+      const username = user.username ? "@" + user.username : "không có username";
+      subtitleEl.textContent = `Xin chào, ${fullName}!`;
+      userNameEl.textContent = fullName || "Không tên";
+      userIdEl.textContent = `• ID ${user.id} • ${username}`;
+      const botUsername = tg.initDataUnsafe?.receiver?.username || "YourBotUsername";
+      const refLink = `https://t.me/${botUsername}?start=${user.id}`;
+      inviteLinkEl.textContent = refLink;
+      inviteDescEl.textContent = "Link mời của bạn:";
+    } else {
+      subtitleEl.textContent = "Không lấy được thông tin tài khoản từ Telegram.";
+      userNameEl.textContent = "Khách";
+      userIdEl.textContent = "ID ?";
+      inviteLinkEl.textContent = "Vui lòng mở mini app từ bot để có link mời.";
+      inviteDescEl.textContent = "Không tìm thấy thông tin user.";
+    }
+  }
+
+  function showPage(targetId) {
+    pages.forEach(p => {
+      p.id === targetId ? p.classList.remove("hidden") : p.classList.add("hidden");
+    });
+  }
+
+  navItems.forEach(item => {
+    item.addEventListener("click", () => {
+      const target = item.getAttribute("data-target");
+      navItems.forEach(i => i.classList.remove("active"));
+      item.classList.add("active");
+      showPage(target);
+    });
+  });
+
+  // Buttons
+  const btnMine = document.getElementById("btnMine");
+  const mineStatusEl = document.getElementById("mineStatus");
+  const btnConvert = document.getElementById("btnConvert");
+  const btnOpenBotFromHome = document.getElementById("btnOpenBotFromHome");
+  const btnAdGold = document.getElementById("btnAdGold");
+  const btnAdDiamond = document.getElementById("btnAdDiamond");
+  const btnOpenMainChannel = document.getElementById("btnOpenMainChannel");
+  const btnCopyRef = document.getElementById("btnCopyRef");
+  const btnShareRef = document.getElementById("btnShareRef");
+  const btnOpenBotWithdraw = document.getElementById("btnOpenBotWithdraw");
+
+  function updateMineStatus() {
+    if (!lastMineTs) {
+      mineStatusEl.textContent = "Có thể nhận ngay bây giờ";
+      return;
+    }
+    const diff = Date.now() - lastMineTs;
+    if (diff >= MINE_COOLDOWN) {
+      mineStatusEl.textContent = "Có thể nhận ngay bây giờ";
+    } else {
+      const remain = Math.ceil((MINE_COOLDOWN - diff) / 1000);
+      const m = Math.floor(remain / 60);
+      const s = remain % 60;
+      mineStatusEl.textContent = `Vui lòng chờ ${m}m ${s < 10 ? "0"+s : s}s`;
+    }
+  }
+
+  btnMine.addEventListener("click", () => {
+    const diff = Date.now() - lastMineTs;
+    if (diff < MINE_COOLDOWN && lastMineTs !== 0) {
+      updateMineStatus();
+      tg.showAlert("⏱ Bạn vừa nhận rồi, hãy chờ thêm 5 phút nữa nhé!");
+      return;
+    }
+    const bonus = Math.floor(Math.random() * 3) + 1; // 1–3
+    diamonds += bonus;
+    lastMineTs = Date.now();
+    updateBalancesUI();
+    updateMineStatus();
+    tg.showPopup({
+      title: "⛏ Khai thác thành công!",
+      message: `Bạn nhận được ${bonus} 💎 may mắn.`,
+      buttons: [{id: "ok", type: "default", text: "OK"}]
+    });
+    // TODO: gửi kết quả về bot qua fetch hoặc tg.sendData nếu bạn muốn lưu server
+  });
+
+  setInterval(updateMineStatus, 1000);
+
+  btnConvert.addEventListener("click", () => {
+    if (diamonds <= 0) {
+      tg.showAlert("Bạn không có 💎 để quy đổi.");
+      return;
+    }
+    const gain = diamonds * 1000;
+    gold += gain;
+    diamonds = 0;
+    updateBalancesUI();
+    tg.showPopup({
+      title: "💱 Quy đổi thành công",
+      message: `Bạn đã đổi ${gain.toLocaleString("vi-VN")} 🪙 từ kim cương.`,
+      buttons: [{id: "ok", type: "default", text: "OK"}]
+    });
+    // TODO: gửi request lên server để cập nhật số dư thật
+  });
+
+  btnOpenBotFromHome.addEventListener("click", () => tg.close());
+  btnOpenBotWithdraw.addEventListener("click", () => tg.close());
+
+  btnAdGold.addEventListener("click", () => {
+    gold += 20000;
+    updateBalancesUI();
+    tg.showAlert("Demo: cộng 20.000 🪙. Khi làm thật hãy gắn API / check xem quảng cáo.");
+  });
+
+  btnAdDiamond.addEventListener("click", () => {
+    diamonds += 50;
+    updateBalancesUI();
+    tg.showAlert("Demo: cộng 50 💎. Khi làm thật hãy gắn API / check xem quảng cáo.");
+  });
+
+  btnOpenMainChannel.addEventListener("click", () => {
+    const channelUrl = "https://t.me/"; // TODO: sửa thành kênh chính của bạn
+    tg.openTelegramLink(channelUrl);
+  });
+
+  btnCopyRef.addEventListener("click", async () => {
+    const link = inviteLinkEl.textContent.trim();
+    if (!link || link.startsWith("Vui lòng")) {
+      tg.showAlert("Không tìm thấy link mời.");
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(link);
+      tg.showPopup({
+        title: "Đã sao chép",
+        message: "Link mời đã được copy, dán và gửi cho bạn bè nhé!",
+        buttons: [{id: "ok", type: "default", text: "OK"}]
+      });
+    } catch (e) {
+      tg.showAlert("Không copy được, hãy copy tay:\n" + link);
+    }
+  });
+
+  btnShareRef.addEventListener("click", () => {
+    const link = inviteLinkEl.textContent.trim();
+    if (!link || link.startsWith("Vui lòng")) {
+      tg.showAlert("Không tìm thấy link mời.");
+      return;
+    }
+    tg.openTelegramLink(link);
+  });
+
+  // Khởi tạo
+  updateBalancesUI();
+  updateUserUI();
+  showPage("page-home");
+</script>
+</body>
+</html>
