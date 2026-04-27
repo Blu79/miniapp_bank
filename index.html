@@ -1,209 +1,192 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mini Bank App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Telegram WebApp JS -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+    }
+    .app {
+      padding: 16px;
+    }
+    .card {
+      background: rgba(15,23,42,0.9);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      border: 1px solid rgba(148,163,184,0.3);
+    }
+    .title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .subtitle {
+      font-size: 14px;
+      color: #9ca3af;
+      margin-bottom: 12px;
+    }
+    .balance {
+      font-size: 26px;
+      font-weight: 700;
+      margin: 8px 0;
+      color: #22c55e;
+    }
+    .row {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .pill {
+      flex: 1;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 13px;
+      text-align: center;
+      background: rgba(30,64,175,0.7);
+      color: #e5e7eb;
+      border: 1px solid rgba(191,219,254,0.2);
+      cursor: pointer;
+      user-select: none;
+    }
+    .pill.secondary {
+      background: rgba(15,23,42,0.8);
+      border-color: rgba(148,163,184,0.4);
+    }
+    .pill:active {
+      transform: scale(0.98);
+      opacity: 0.8;
+    }
+    .label {
+      font-size: 13px;
+      color: #9ca3af;
+    }
+    .value {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .section-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin: 12px 0 6px;
+    }
+    .tag {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      background: rgba(56,189,248,0.15);
+      border: 1px solid rgba(56,189,248,0.5);
+      color: #7dd3fc;
+      margin-right: 4px;
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="card">
+    <div class="title">Mini Bank App 💳</div>
+    <div class="subtitle" id="subtitle">Đang tải thông tin Telegram...</div>
+
+    <div class="label">Số dư ước tính</div>
+    <div class="balance" id="balance">0 đ</div>
+
+    <div class="row">
+      <div class="pill" id="btnOpenBot">
+        🔁 Mở bot chat
+      </div>
+      <div class="pill secondary" id="btnCopyRef">
+        👥 Copy link mời
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Trạng thái tài khoản</div>
+    <div class="label">User</div>
+    <div class="value" id="userInfo">Không xác định</div>
+
+    <div class="label">Thông tin khác</div>
+    <div class="tag">Điểm danh mỗi ngày 🎯</div>
+    <div class="tag">Làm nhiệm vụ 🧾</div>
+    <div class="tag">Mời bạn bè 👥</div>
+  </div>
+</div>
+
 <script>
   const tg = window.Telegram.WebApp;
-  tg.ready();
-  tg.expand();
+  tg.expand(); // mở rộng full màn hình
 
-  // Lấy user từ Telegram WebApp (nếu mở đúng từ trong Telegram)
+  // Lấy thông tin user từ WebApp
   let user = tg.initDataUnsafe && tg.initDataUnsafe.user;
 
-  // Fallback: đọc uid / uname truyền từ bot qua query (?uid=...&uname=...)
-  const params = new URLSearchParams(window.location.search);
-  const fallbackUid = params.get("uid");
-  const fallbackUname = params.get("uname");
-
-  // 👉 ĐỔI THÀNH USERNAME BOT THẬT CỦA BẠN (không có @)
-  const BOT_USERNAME = "YourBotUsername";  // ví dụ: MiniBankVND_Bot
-
   const subtitleEl = document.getElementById("subtitle");
-  const userNameEl = document.getElementById("userName");
-  const userIdEl = document.getElementById("userId");
-  const diamondBalanceEl = document.getElementById("diamondBalance");
-  const goldBalanceEl = document.getElementById("goldBalance");
-  const inviteLinkEl = document.getElementById("inviteLink");
-  const inviteDescEl = document.getElementById("inviteDesc");
-
-  const navItems = document.querySelectorAll(".nav-item");
-  const pages = document.querySelectorAll(".page");
-
-  // Demo state
-  let diamonds = 1000;
-  let gold = 3000001;
-  let lastMineTs = 0;
-  const MINE_COOLDOWN = 5 * 60 * 1000; // 5 phút
-
-  function updateBalancesUI() {
-    diamondBalanceEl.textContent = diamonds.toLocaleString("vi-VN");
-    goldBalanceEl.textContent = gold.toLocaleString("vi-VN");
-  }
-
-  function buildRefLink(id) {
-    return `https://t.me/${BOT_USERNAME}?start=${id}`;
-  }
-
-  function updateUserUI() {
-    if (user) {
-      // Trường hợp chuẩn: mở từ Telegram WebApp
-      const fullName = [user.first_name, user.last_name].filter(Boolean).join(" ");
-      const username = user.username ? "@" + user.username : "không có username";
-
-      subtitleEl.textContent = `Xin chào, ${fullName}!`;
-      userNameEl.textContent = fullName || "Không tên";
-      userIdEl.textContent = `Khách ID ${user.id} • ${username}`;
-
-      const refLink = buildRefLink(user.id);
-      inviteLinkEl.textContent = refLink;
-      inviteDescEl.textContent = "Link mời của bạn:";
-    } else if (fallbackUid) {
-      // Fallback: WebApp không có user nhưng có uid từ query
-      const fullName = "Khách " + fallbackUid;
-      const username = fallbackUname ? "@" + fallbackUname : "không có username";
-
-      subtitleEl.textContent = `Xin chào, ${fullName}!`;
-      userNameEl.textContent = fullName;
-      userIdEl.textContent = `Khách ID ${fallbackUid} • ${username}`;
-
-      const refLink = buildRefLink(fallbackUid);
-      inviteLinkEl.textContent = refLink;
-      inviteDescEl.textContent = "Link mời của bạn (fallback):";
-    } else {
-      // Mở trực tiếp trên Chrome → không biết user
-      subtitleEl.textContent = "Không lấy được thông tin tài khoản từ Telegram.";
-      userNameEl.textContent = "Khách";
-      userIdEl.textContent = "ID ?";
-      inviteLinkEl.textContent = "Vui lòng mở mini app từ bot để có link mời.";
-      inviteDescEl.textContent = "Không tìm thấy thông tin user.";
-    }
-  }
-
-  function showPage(targetId) {
-    pages.forEach(p => {
-      p.id === targetId ? p.classList.remove("hidden") : p.classList.add("hidden");
-    });
-  }
-
-  navItems.forEach(item => {
-    item.addEventListener("click", () => {
-      const target = item.getAttribute("data-target");
-      navItems.forEach(i => i.classList.remove("active"));
-      item.classList.add("active");
-      showPage(target);
-    });
-  });
-
-  // Buttons
-  const btnMine = document.getElementById("btnMine");
-  const mineStatusEl = document.getElementById("mineStatus");
-  const btnConvert = document.getElementById("btnConvert");
-  const btnOpenBotFromHome = document.getElementById("btnOpenBotFromHome");
-  const btnAdGold = document.getElementById("btnAdGold");
-  const btnAdDiamond = document.getElementById("btnAdDiamond");
-  const btnOpenMainChannel = document.getElementById("btnOpenMainChannel");
+  const balanceEl = document.getElementById("balance");
+  const userInfoEl = document.getElementById("userInfo");
+  const btnOpenBot = document.getElementById("btnOpenBot");
   const btnCopyRef = document.getElementById("btnCopyRef");
-  const btnShareRef = document.getElementById("btnShareRef");
-  const btnOpenBotWithdraw = document.getElementById("btnOpenBotWithdraw");
 
-  function updateMineStatus() {
-    if (!lastMineTs) {
-      mineStatusEl.textContent = "Có thể nhận ngay bây giờ";
-      return;
-    }
-    const diff = Date.now() - lastMineTs;
-    if (diff >= MINE_COOLDOWN) {
-      mineStatusEl.textContent = "Có thể nhận ngay bây giờ";
-    } else {
-      const remain = Math.ceil((MINE_COOLDOWN - diff) / 1000);
-      const m = Math.floor(remain / 60);
-      const s = remain % 60;
-      mineStatusEl.textContent = `Vui lòng chờ ${m}m ${s < 10 ? "0"+s : s}s`;
-    }
+  // Hiển thị thông tin cơ bản
+  if (user) {
+    const fullName = [user.first_name, user.last_name].filter(Boolean).join(" ");
+    const username = user.username ? "@" + user.username : "không có username";
+    subtitleEl.textContent = `Xin chào, ${fullName}!`;
+    userInfoEl.textContent = `${fullName} • ID ${user.id} • ${username}`;
+  } else {
+    subtitleEl.textContent = "Không lấy được thông tin user từ Telegram WebApp.";
+    userInfoEl.textContent = "Vui lòng mở Mini App từ trong bot.";
   }
 
-  btnMine.addEventListener("click", () => {
-    const diff = Date.now() - lastMineTs;
-    if (diff < MINE_COOLDOWN && lastMineTs !== 0) {
-      updateMineStatus();
-      tg.showAlert("⏱ Bạn vừa nhận rồi, hãy chờ thêm 5 phút nữa nhé!");
-      return;
-    }
-    const bonus = Math.floor(Math.random() * 3) + 1; // 1–3
-    diamonds += bonus;
-    lastMineTs = Date.now();
-    updateBalancesUI();
-    updateMineStatus();
-    tg.showPopup({
-      title: "⛏ Khai thác thành công!",
-      message: `Bạn nhận được ${bonus} 💎 may mắn.`,
-      buttons: [{id: "ok", type: "default", text: "OK"}]
-    });
+  // ⚠️ Ở đây mình chỉ hiển thị SỐ DƯ GIẢ (demo)
+  // Thực tế bạn nên gọi API backend của bạn để trả về số dư thật.
+  // Ví dụ: fetch('/api/balance?user_id=' + user.id)...
+  balanceEl.textContent = "Đang tải...";
+
+  // Demo: giả lập fetch số dư
+  setTimeout(() => {
+    // TODO: thay bằng số dư thật từ server
+    const fakeBalance = 123456; 
+    balanceEl.textContent = fakeBalance.toLocaleString("vi-VN") + " đ";
+  }, 700);
+
+  // Nút mở lại bot chat
+  btnOpenBot.addEventListener("click", () => {
+    tg.close(); // đóng WebApp để quay lại bot
   });
 
-  setInterval(updateMineStatus, 1000);
-
-  btnConvert.addEventListener("click", () => {
-    if (diamonds <= 0) {
-      tg.showAlert("Bạn không có 💎 để quy đổi.");
-      return;
-    }
-    const gain = diamonds * 1000;
-    gold += gain;
-    diamonds = 0;
-    updateBalancesUI();
-    tg.showPopup({
-      title: "💱 Quy đổi thành công",
-      message: `Bạn đã đổi ${gain.toLocaleString("vi-VN")} 🪙 từ kim cương.`,
-      buttons: [{id: "ok", type: "default", text: "OK"}]
-    });
-  });
-
-  btnOpenBotFromHome.addEventListener("click", () => tg.close());
-  btnOpenBotWithdraw.addEventListener("click", () => tg.close());
-
-  btnAdGold.addEventListener("click", () => {
-    gold += 20000;
-    updateBalancesUI();
-    tg.showAlert("Demo: cộng 20.000 🪙. Khi làm thật hãy gắn API / check xem quảng cáo.");
-  });
-
-  btnAdDiamond.addEventListener("click", () => {
-    diamonds += 50;
-    updateBalancesUI();
-    tg.showAlert("Demo: cộng 50 💎. Khi làm thật hãy gắn API / check xem quảng cáo.");
-  });
-
-  btnOpenMainChannel.addEventListener("click", () => {
-    const channelUrl = "https://t.me/"; // TODO: sửa thành kênh chính của bạn
-    tg.openTelegramLink(channelUrl);
-  });
-
+  // Nút copy link mời
   btnCopyRef.addEventListener("click", async () => {
-    const link = inviteLinkEl.textContent.trim();
-    if (!link || link.startsWith("Vui lòng")) {
-      tg.showAlert("Không tìm thấy link mời.");
+    if (!user) {
+      tg.showAlert("Không lấy được ID user.");
       return;
     }
+    const botUsername = tg.initDataUnsafe && tg.initDataUnsafe.receiver && tg.initDataUnsafe.receiver.username;
+    // Nếu không lấy được từ initData, bạn có thể hardcode tên bot:
+    const finalBotUsername = botUsername || "TenBotCuaBan";
+    const refLink = `https://t.me/${finalBotUsername}?start=${user.id}`;
+
     try {
-      await navigator.clipboard.writeText(link);
+      await navigator.clipboard.writeText(refLink);
       tg.showPopup({
-        title: "Đã sao chép",
-        message: "Link mời đã được copy, dán và gửi cho bạn bè nhé!",
+        title: "Đã copy!",
+        message: "Link mời đã được sao chép, hãy dán và gửi cho bạn bè.",
         buttons: [{id: "ok", type: "default", text: "OK"}]
       });
     } catch (e) {
-      tg.showAlert("Không copy được, hãy copy tay:\n" + link);
+      tg.showAlert("Không copy được, vui lòng copy tay:\n" + refLink);
     }
   });
-
-  btnShareRef.addEventListener("click", () => {
-    const link = inviteLinkEl.textContent.trim();
-    if (!link || link.startsWith("Vui lòng")) {
-      tg.showAlert("Không tìm thấy link mời.");
-      return;
-    }
-    tg.openTelegramLink(link);
-  });
-
-  // Khởi tạo
-  updateBalancesUI();
-  updateUserUI();
-  showPage("page-home");
 </script>
+</body>
+</html>
+
