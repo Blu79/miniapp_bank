@@ -1,192 +1,105 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <title>Mini Bank App</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- Telegram WebApp JS -->
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <style>
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #0f172a;
-      color: #e5e7eb;
-    }
-    .app {
-      padding: 16px;
-    }
-    .card {
-      background: rgba(15,23,42,0.9);
-      border-radius: 16px;
-      padding: 16px;
-      margin-bottom: 12px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-      border: 1px solid rgba(148,163,184,0.3);
-    }
-    .title {
-      font-size: 20px;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-    .subtitle {
-      font-size: 14px;
-      color: #9ca3af;
-      margin-bottom: 12px;
-    }
-    .balance {
-      font-size: 26px;
-      font-weight: 700;
-      margin: 8px 0;
-      color: #22c55e;
-    }
-    .row {
-      display: flex;
-      gap: 10px;
-      margin-top: 8px;
-    }
-    .pill {
-      flex: 1;
-      border-radius: 999px;
-      padding: 10px 14px;
-      font-size: 13px;
-      text-align: center;
-      background: rgba(30,64,175,0.7);
-      color: #e5e7eb;
-      border: 1px solid rgba(191,219,254,0.2);
-      cursor: pointer;
-      user-select: none;
-    }
-    .pill.secondary {
-      background: rgba(15,23,42,0.8);
-      border-color: rgba(148,163,184,0.4);
-    }
-    .pill:active {
-      transform: scale(0.98);
-      opacity: 0.8;
-    }
-    .label {
-      font-size: 13px;
-      color: #9ca3af;
-    }
-    .value {
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-    .section-title {
-      font-size: 15px;
-      font-weight: 600;
-      margin: 12px 0 6px;
-    }
-    .tag {
-      display: inline-block;
-      padding: 3px 8px;
-      border-radius: 999px;
-      font-size: 11px;
-      background: rgba(56,189,248,0.15);
-      border: 1px solid rgba(56,189,248,0.5);
-      color: #7dd3fc;
-      margin-right: 4px;
-      margin-bottom: 4px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LAM05 Control</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0d1117; color: #e6edf3; font-family: sans-serif; }
+        .card { background-color: #161b22; border: 1px solid #30363d; border-radius: 16px; }
+        input[type="checkbox"] { accent-color: #10b981; width: 18px; height: 18px; }
+    </style>
 </head>
-<body>
-<div class="app">
-  <div class="card">
-    <div class="title">Mini Bank App 💳</div>
-    <div class="subtitle" id="subtitle">Đang tải thông tin Telegram...</div>
+<body class="p-4 flex justify-center">
+    <div class="card w-full max-w-md p-6 space-y-6">
+        <div class="flex items-center justify-between border-b border-gray-700 pb-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center font-bold text-white">L</div>
+                <div>
+                    <h1 class="text-emerald-400 font-bold text-lg">LAM05 - @toollo05</h1>
+                    <p class="text-gray-500 text-xs text-center">🌐 IP: 1.54.247.146</p>
+                </div>
+            </div>
+        </div>
 
-    <div class="label">Số dư ước tính</div>
-    <div class="balance" id="balance">0 đ</div>
+        <div>
+            <p class="text-gray-400 text-[10px] font-bold mb-3 uppercase tracking-widest">Site KJC</p>
+            <div class="grid grid-cols-2 gap-3 text-sm">
+                <label class="flex items-center gap-2"><input type="checkbox" name="site" value="QQ88"> QQ88</label>
+                <label class="flex items-center gap-2"><input type="checkbox" name="site" value="RR88"> RR88</label>
+                <label class="flex items-center gap-2"><input type="checkbox" name="site" value="MM88"> MM88</label>
+                <label class="flex items-center gap-2"><input type="checkbox" name="site" value="XX88"> XX88</label>
+                <label class="flex items-center gap-2"><input type="checkbox" name="site" value="OPEN88"> OPEN88</label>
+            </div>
+        </div>
 
-    <div class="row">
-      <div class="pill" id="btnOpenBot">
-        🔁 Mở bot chat
-      </div>
-      <div class="pill secondary" id="btnCopyRef">
-        👥 Copy link mời
-      </div>
+        <div>
+            <p class="text-gray-400 text-[10px] font-bold mb-3 uppercase tracking-widest">Site OKVIP</p>
+            <div class="grid grid-cols-2 gap-3 text-sm">
+                <label class="flex items-center gap-2"><input type="checkbox" name="site" value="SC88"> SC88</label>
+                <label class="flex items-center gap-2"><input type="checkbox" name="site" value="CM88"> CM88</label>
+                <label class="flex items-center gap-2"><input type="checkbox" name="site" value="FLY88"> FLY88</label>
+                <label class="flex items-center gap-2"><input type="checkbox" name="site" value="F168"> F168</label>
+                <label class="flex items-center gap-2"><input type="checkbox" name="site" value="C168"> C168</label>
+                <label class="flex items-center gap-2"><input type="checkbox" name="site" value="ABCVIP"> ABCVIP</label>
+                <label class="flex items-center gap-2"><input type="checkbox" name="site" value="NOHU"> NOHU</label>
+            </div>
+        </div>
+
+        <div>
+            <p class="text-gray-400 text-[10px] font-bold mb-2 uppercase tracking-widest">Dữ liệu Base64</p>
+            <textarea id="base64Input" class="w-full h-24 bg-gray-900 border border-gray-700 rounded-lg p-3 text-xs focus:outline-none focus:border-emerald-500 font-mono" placeholder="Nhấn để dán dữ liệu..."></textarea>
+        </div>
+
+        <div class="space-y-3">
+            <button onclick="startAuto()" class="w-full bg-emerald-600 hover:bg-emerald-500 py-4 rounded-xl font-bold text-white flex justify-center items-center gap-2 transition-all shadow-lg active:scale-95">
+                ⚡ KHỞI CHẠY AUTO
+            </button>
+            <button class="w-full bg-slate-800 hover:bg-slate-700 py-3 rounded-xl font-semibold text-sm flex justify-center items-center gap-2 transition-all text-gray-300">
+                🏦 ĐIỀN BANK BỔ SUNG
+            </button>
+        </div>
     </div>
-  </div>
 
-  <div class="card">
-    <div class="section-title">Trạng thái tài khoản</div>
-    <div class="label">User</div>
-    <div class="value" id="userInfo">Không xác định</div>
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
 
-    <div class="label">Thông tin khác</div>
-    <div class="tag">Điểm danh mỗi ngày 🎯</div>
-    <div class="tag">Làm nhiệm vụ 🧾</div>
-    <div class="tag">Mời bạn bè 👥</div>
-  </div>
-</div>
+        async function startAuto() {
+            const base64 = document.getElementById('base64Input').value;
+            const sites = Array.from(document.querySelectorAll('input[name="site"]:checked')).map(cb => cb.value);
+            
+            if(!base64 || sites.length === 0) {
+                tg.showAlert("Vui lòng chọn site và dán dữ liệu!");
+                return;
+            }
 
-<script>
-  const tg = window.Telegram.WebApp;
-  tg.expand(); // mở rộng full màn hình
+            try {
+                // CHỈ CẦN THAY LINK NGROK VÀO DÒNG DƯỚI ĐÂY
+                const url = 'https://barbecue-voicing-enlighten.ngrok-free.dev/run-auto'; 
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ 
+                        user_id: tg.initDataUnsafe.user?.id || "N/A", 
+                        sites: sites, 
+                        data: base64 
+                    })
+                });
 
-  // Lấy thông tin user từ WebApp
-  let user = tg.initDataUnsafe && tg.initDataUnsafe.user;
-
-  const subtitleEl = document.getElementById("subtitle");
-  const balanceEl = document.getElementById("balance");
-  const userInfoEl = document.getElementById("userInfo");
-  const btnOpenBot = document.getElementById("btnOpenBot");
-  const btnCopyRef = document.getElementById("btnCopyRef");
-
-  // Hiển thị thông tin cơ bản
-  if (user) {
-    const fullName = [user.first_name, user.last_name].filter(Boolean).join(" ");
-    const username = user.username ? "@" + user.username : "không có username";
-    subtitleEl.textContent = `Xin chào, ${fullName}!`;
-    userInfoEl.textContent = `${fullName} • ID ${user.id} • ${username}`;
-  } else {
-    subtitleEl.textContent = "Không lấy được thông tin user từ Telegram WebApp.";
-    userInfoEl.textContent = "Vui lòng mở Mini App từ trong bot.";
-  }
-
-  // ⚠️ Ở đây mình chỉ hiển thị SỐ DƯ GIẢ (demo)
-  // Thực tế bạn nên gọi API backend của bạn để trả về số dư thật.
-  // Ví dụ: fetch('/api/balance?user_id=' + user.id)...
-  balanceEl.textContent = "Đang tải...";
-
-  // Demo: giả lập fetch số dư
-  setTimeout(() => {
-    // TODO: thay bằng số dư thật từ server
-    const fakeBalance = 123456; 
-    balanceEl.textContent = fakeBalance.toLocaleString("vi-VN") + " đ";
-  }, 700);
-
-  // Nút mở lại bot chat
-  btnOpenBot.addEventListener("click", () => {
-    tg.close(); // đóng WebApp để quay lại bot
-  });
-
-  // Nút copy link mời
-  btnCopyRef.addEventListener("click", async () => {
-    if (!user) {
-      tg.showAlert("Không lấy được ID user.");
-      return;
-    }
-    const botUsername = tg.initDataUnsafe && tg.initDataUnsafe.receiver && tg.initDataUnsafe.receiver.username;
-    // Nếu không lấy được từ initData, bạn có thể hardcode tên bot:
-    const finalBotUsername = botUsername || "TenBotCuaBan";
-    const refLink = `https://t.me/${finalBotUsername}?start=${user.id}`;
-
-    try {
-      await navigator.clipboard.writeText(refLink);
-      tg.showPopup({
-        title: "Đã copy!",
-        message: "Link mời đã được sao chép, hãy dán và gửi cho bạn bè.",
-        buttons: [{id: "ok", type: "default", text: "OK"}]
-      });
-    } catch (e) {
-      tg.showAlert("Không copy được, vui lòng copy tay:\n" + refLink);
-    }
-  });
-</script>
+                const result = await response.json();
+                tg.showPopup({
+                    title: 'Thành công',
+                    message: result.message,
+                    buttons: [{type: 'ok'}]
+                });
+            } catch (err) {
+                tg.showAlert("Không kết nối được tới PC. Hãy kiểm tra Ngrok!");
+            }
+        }
+    </script>
 </body>
 </html>
-
